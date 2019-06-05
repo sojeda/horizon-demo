@@ -15,7 +15,9 @@ use Zttp\ZttpResponse;
 class FetchStarWarsEntity implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
     const API_URL = 'https://swapi.co';
+
     /**
      * ID of entity to fetch
      *
@@ -62,11 +64,21 @@ class FetchStarWarsEntity implements ShouldQueue
             self::API_URL, $this->getEntityType(),
             $this->getEntityId()
         );
-        /**
-         * @var ZttpResponse $response
-         */
+
+        /** @var ZttpResponse $response */
         $response = Zttp::withHeaders($headers)->get($url);
-        // Send email notification
+
+        if (empty($response) === true || 200 !== $response->status()) {
+            $error = 'Failed to fetch Star Wars entity.';
+            \Log::error($error, [
+                'url' => $url,
+                'response' => $response->json(),
+                'status' => $response->status(),
+                'headers' => $response->headers(),
+            ]);
+            throw new \RuntimeException($error);
+        }
+
         $this->getUser()->notify(new FetchedStarWarsEntity($response->json()));
     }
 
