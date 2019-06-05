@@ -15,6 +15,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/export', 'UserExportController');
 
 Route::group(['prefix' => 'queues'], function() {
     Route::get('fetch-star-wars-entity', 'FetchStarWarsEntityController')
